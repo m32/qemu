@@ -128,8 +128,8 @@ extern QEMUMachine musicpal_machine;
 /* tosa.c */
 extern QEMUMachine tosapda_machine;
 
-/* mini2440.c */
-extern QEMUMachine mini2440_machine;
+/* s3cwince.c */
+extern QEMUMachine s3cwince_machine;
 
 /* syborg.c */
 extern QEMUMachine syborg_machine;

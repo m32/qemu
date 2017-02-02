@@ -27,7 +27,7 @@ TARGET_PATH=$(SRC_PATH)/target-$(TARGET_BASE_ARCH)
 VPATH=$(SRC_PATH):$(TARGET_PATH):$(SRC_PATH)/hw
 CPPFLAGS=-I. -I.. -I$(TARGET_PATH) -I$(SRC_PATH) -MMD -MT $@ -MP -DNEED_CPU_H
 #CFLAGS+=-Werror
-LIBS=
+LIBS=-lrt -lz
 # user emulator name
 ifndef TARGET_ARCH2
 TARGET_ARCH2=$(TARGET_ARCH)
@@ -655,9 +655,11 @@ OBJS+= nseries.o blizzard.o onenand.o vga.o cbus.o tusb6010.o usb-musb.o
 OBJS+= mst_fpga.o mainstone.o
 OBJS+= musicpal.o pflash_cfi02.o
 OBJS+= framebuffer.o
-OBJS+= s3c2410.o s3c24xx_gpio.o s3c24xx_lcd.o s3c24xx_mmci.o s3c24xx_rtc.o s3c24xx_udc.o s3c2410_nand.o s3c2440_nand.o  
+OBJS+= s3c2410wince.o
+OBJS+= s3c2410.o
+OBJS+= s3c24xx_gpio.o s3c24xx_lcd.o s3c24xx_mmci.o s3c24xx_rtc.o s3c24xx_udc.o s3c2410_nand.o s3c2440_nand.o  
+OBJS+= s3c2410_adc.o s3c2410_clkpwr.o s3c2410_dma.o s3c2410_i2c.o s3c2410_i2s.o s3c2410_mc.o s3c2410_pic.o s3c2410_pwm.o s3c2410_spi.o s3c2410_uart.o s3c2410_wdt.o
 OBJS+= dm9000.o eeprom24c0x.o
-OBJS+= mini2440.o
 OBJS+= syborg.o syborg_fb.o syborg_interrupt.o syborg_keyboard.o
 OBJS+= syborg_serial.o syborg_timer.o syborg_pointer.o syborg_rtc.o
 OBJS+= syborg_virtio.o

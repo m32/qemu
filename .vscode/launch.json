@@ -1,0 +1,94 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "wince debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/arm-softmmu/qemu-system-arm",
+            "args": [
+                "-M", "s3cwince",
+                "-cpu", "1",
+                "-m", "256",
+                "-kernel", "../pocketpc.nb0",
+                "-pflash", "../pocketpc.nb0",
+                "-sd", "../sd.img",
+                "-mtdblock", "../flash.bin",
+                "-serial", "stdio",
+                "-show-cursor",
+                "-usb",
+                "-usbdevice", "keyboard",
+                "-usbdevice", "mouse",
+                //"-net","nic,vlan=0",
+                //"-net","tap,vlan=0,ifname=tap0",
+                "-monitor", "telnet::5555,server,nowait"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [
+
+            ],
+            "externalConsole": true,
+            "linux": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        },
+        {
+            "name": "pis/demo",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/arm-softmmu/qemu-system-arm",
+            "args": [
+                "-M","raspi2",
+                "-m","256",
+                "-kernel","../pis/demo.elf",
+                "-serial","stdio",
+                "-show-cursor",
+                "-usb",
+                //"-net","nic,vlan=0",
+                //"-net","tap,vlan=0,ifname=tap0",
+                "-monitor","telnet::5555,server,nowait"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [
+
+            ],
+            "externalConsole": true,
+            "linux": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        },
+        {
+            "name": "C++ Attach",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceRoot}/arm-softmmu/qemu-system-arm",
+            "processId": "${command.pickProcess}",
+            "linux": {
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        }
+    ]
+}

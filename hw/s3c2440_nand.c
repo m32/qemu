@@ -362,13 +362,12 @@ static const struct s3c_nand_driver_s s3c2440_nand_driver = {
 	.reg = s3c2440_nand_register
 };
 
-struct s3c_nand_driver_s * s3c2440_nand_init(void)
+struct s3c_nand_driver_s * s3c2440_nand_init(target_phys_addr_t base)
 {
 	int iomemtype;
-	struct s3c2440_nand_s *nand = (struct s3c2440_nand_s *)
-	            qemu_mallocz(sizeof(struct s3c2440_nand_s));
+	struct s3c2440_nand_s *nand = (struct s3c2440_nand_s *) qemu_mallocz(sizeof(struct s3c2440_nand_s));
 	nand->driver = s3c2440_nand_driver;
-	nand->nand_base = 0x4e000000;
+	nand->nand_base = base;
 	nand->driver.reset(nand);
 	iomemtype = cpu_register_io_memory(0, s3c2440_nand_readfn, s3c2440_nand_writefn, nand);
 	cpu_register_physical_memory(nand->nand_base, 0xffffff, iomemtype);

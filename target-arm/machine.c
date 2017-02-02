@@ -23,7 +23,7 @@ void register_machines(void)
     qemu_register_machine(&mainstone2_machine);
     qemu_register_machine(&musicpal_machine);
     qemu_register_machine(&tosapda_machine);
-    qemu_register_machine(&mini2440_machine);
+    qemu_register_machine(&s3cwince_machine);
     qemu_register_machine(&syborg_machine);
 }
 

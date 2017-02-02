@@ -569,8 +569,8 @@ static void mini2440_init(ram_addr_t ram_size, const char *boot_device,
    mini2440_reset(mini);
 }
 
-QEMUMachine mini2440_machine = {
-    "mini2440",
+QEMUMachine s3cwince_machine = {
+    "s3cwince",
     "S3C2410 Device Emulator for Windows Mobile 5.0",
     .init = mini2440_init,
 };
