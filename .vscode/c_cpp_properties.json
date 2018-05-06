@@ -1,14 +1,21 @@
 {
-    "configurations": [
-        {
-            "name": "Linux",
-            "includePath": [
+    "configurations": [{
+        "name": "Linux",
+        "includePath": [
+            "${workspaceRoot}",
+            "/usr/include"
+        ],
+        "browse": {
+            "limitSymbolsToIncludedHeaders": true,
+            "databaseFilename": "",
+            "path": [
                 "/usr/include"
-            ],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
-            }
-        }
-    ]
+            ]
+        },
+        "intelliSenseMode": "clang-x64",
+        "compilerPath": "/usr/bin/clang",
+        "cStandard": "c11",
+        "cppStandard": "c++17"
+    }],
+    "version": 3
 }

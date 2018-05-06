@@ -243,7 +243,7 @@ static void s3c_gpio_write(void *opaque, target_phys_addr_t addr,
         bank = addr >> 4;
         addr &= 0xf;
     }
-    // printf("%s: addr=%x value=%x\n", __func__, addr, value);
+//    printf("%s: addr=%x value=%x\n", __func__, addr, value);
 
     switch (addr) {
     case S3C_GSTATUS2:

@@ -1,5 +1,5 @@
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 
 /* Serial Peripheral Interface */
 struct s3c_spi_state_s {
@@ -103,6 +103,36 @@ static uint32_t s3c_spi_read(void *opaque, target_phys_addr_t addr)
         break;
     }
     return 0;
+}
+
+/* Table to convert from PC scancodes to raw scancodes.  */
+static const unsigned char ps2_raw_keycode[128] = {
+  0, 41, 49, 57, 47, 55, 63, 71, 79, 87, 65, 73,  0, 89,105,
+ 11, 43, 51, 59, 67, 58, 66, 74, 82, 75, 83, 91,107, 90, 25,
+ 13, 45, 53, 61, 69, 77, 85, 68, 76, 84, 92,  0, 18, 10, 12,
+ 14, 46, 54, 62, 70, 78, 86, 94, 93, 96,  0,  0,110, 44,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,108,  0,  0,
+109,  0,111,  0,  0,106,  0,  0, 42,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,
+};
+static void spi_put_keycode(void *opaque, int keycode)
+{
+    extern struct s3c_state_s * g_s3c;
+    struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
+    int dkeycode = keycode;
+
+    dkeycode = ps2_raw_keycode[keycode & 0X7f];
+    if( keycode >= 0x80 )
+        dkeycode |= 0x80;
+    if( dkeycode != 0 && dkeycode != 0x80 ){
+        s->chan[1].rxbuf = dkeycode;
+        qemu_irq_raise(g_s3c->irq[S3C_PIC_EINT1]);
+    } else 
+        printf("%s: unsupported key=%02x dkey=%02x tx=%02x\n", __FUNCTION__,
+            keycode, dkeycode,
+            s->chan[1].txbuf);
 }
 
 static void s3c_spi_write(void *opaque, target_phys_addr_t addr,
@@ -293,6 +323,7 @@ struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base,
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
 
     s3c_spi_bitbang_init(s, gpio);
+    qemu_add_kbd_event_handler(spi_put_keycode, s);
 
     register_savevm("s3c24xx_spi", 0, 0, s3c_spi_save, s3c_spi_load, s);
 
@@ -309,4 +340,3 @@ void s3c_spi_attach(struct s3c_spi_state_s *s, int ch,
     s->btxrx[ch] = btxrx;
     s->opaque[ch] = opaque;
 }
-

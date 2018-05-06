@@ -1,9 +1,6 @@
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 #include "qemu-timer.h"
-
-/* GPIO TODO: remove this out, replace with qemu_irq or sumpthin */
-typedef void (*gpio_handler_t)(int line, int level, void *opaque);
 
 /* PWM timers controller */
 struct s3c_timer_state_s;
@@ -322,4 +319,3 @@ void s3c_timers_cmp_handler_set(void *opaque, int line,
     s->timer[line].cmp_cb = handler;
     s->timer[line].cmp_opaque = cmp_opaque;
 }
-

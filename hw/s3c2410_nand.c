@@ -32,7 +32,7 @@ struct s3c2410_nand_s {
 #define S3C_NFSTAT	0x10	/* NAND Flash Operation Status register */
 #define S3C_NFECC	0x14	/* NAND Flash ECC register */
 
-void s3c2410_nand_reset(void * opaque)
+static void s3c2410_nand_reset(void * opaque)
 {
     printf("%s\n", __func__);
 	struct s3c2410_nand_s *s = (struct s3c2410_nand_s *)opaque;
@@ -173,12 +173,13 @@ static const struct s3c_nand_driver_s s3c2410_nand_driver = {
 	.reg = s3c2410_nand_register
 };
 
-struct s3c_nand_driver_s * s3c2410_nand_init(target_phys_addr_t base)
+struct s3c_nand_driver_s * s3c2410_nand_init(void)
 {
 	int iomemtype;
-	struct s3c2410_nand_s *nand = (struct s3c2410_nand_s *) qemu_mallocz(sizeof(struct s3c2410_nand_s));
+	struct s3c2410_nand_s *nand = (struct s3c2410_nand_s *)
+	            qemu_mallocz(sizeof(struct s3c2410_nand_s));
 	nand->driver = s3c2410_nand_driver;
-	nand->nand_base = base;
+	nand->nand_base = 0x4e000000;
 	nand->driver.reset(nand);
 	iomemtype = cpu_register_io_memory(0, s3c2410_nand_readfn, s3c2410_nand_writefn, nand);
 	cpu_register_physical_memory(nand->nand_base, 0xffffff, iomemtype);

@@ -1,5 +1,5 @@
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 
 /* DMA controller */
 #define S3C_DMA_CH_N	4
@@ -286,4 +286,3 @@ qemu_irq *s3c_dma_get(struct s3c_dma_state_s *s)
 {
     return s->drqs;
 }
-

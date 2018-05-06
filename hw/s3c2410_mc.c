@@ -1,10 +1,5 @@
 #include "s3c.h"
-#include "sysbus.h"
-
-struct s3c_mc_state_s {
-    target_phys_addr_t mc_base;
-    uint32_t mc_regs[13];
-};
+#include "hw.h"
 
 /* Memory controller */
 #define S3C_BWSCON	0x00	/* Bus Width & Wait Control register */
@@ -21,7 +16,7 @@ struct s3c_mc_state_s {
 #define S3C_MRSRB6	0x2c	/* Bank 6 Mode Set register */
 #define S3C_MRSRB7	0x30	/* Bank 6 Mode Set register */
 
-void s3c_mc_reset(struct s3c_mc_state_s *s)
+void s3c_mc_reset(struct s3c_state_s *s)
 {
     s->mc_regs[S3C_BWSCON >> 2] = 0x0000000;
     s->mc_regs[S3C_BANKCON0 >> 2] = 0x0700;
@@ -40,7 +35,7 @@ void s3c_mc_reset(struct s3c_mc_state_s *s)
 
 static uint32_t s3c_mc_read(void *opaque, target_phys_addr_t addr)
 {
-    struct s3c_mc_state_s *s = (struct s3c_mc_state_s *) opaque;
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
 
     switch (addr >> 2) {
     case S3C_BWSCON ... S3C_MRSRB7:
@@ -55,7 +50,7 @@ static uint32_t s3c_mc_read(void *opaque, target_phys_addr_t addr)
 static void s3c_mc_write(void *opaque, target_phys_addr_t addr,
                 uint32_t value)
 {
-    struct s3c_mc_state_s *s = (struct s3c_mc_state_s *) opaque;
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
 
     switch (addr >> 2) {
     case S3C_BWSCON ... S3C_MRSRB7:
@@ -80,7 +75,7 @@ static CPUWriteMemoryFunc *s3c_mc_writefn[] = {
 
 static void s3c_mc_save(QEMUFile *f, void *opaque)
 {
-    struct s3c_mc_state_s *s = (struct s3c_mc_state_s *) opaque;
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
     int i;
     for (i = 0; i < 13; i ++)
         qemu_put_be32s(f, &s->mc_regs[i]);
@@ -88,17 +83,17 @@ static void s3c_mc_save(QEMUFile *f, void *opaque)
 
 static int s3c_mc_load(QEMUFile *f, void *opaque, int version_id)
 {
-    struct s3c_mc_state_s *s = (struct s3c_mc_state_s *) opaque;
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
     int i;
     for (i = 0; i < 13; i ++)
         qemu_get_be32s(f, &s->mc_regs[i]);
     return 0;
 }
 
-struct s3c_mc_state_s *s3c_mc_init(target_phys_addr_t base)
+void s3c_mc_init(struct s3c_state_s *s, target_phys_addr_t base)
 {
-    struct s3c_mc_state_s *s = (struct s3c_mc_state_s *)qemu_mallocz(sizeof(struct s3c_mc_state_s));
     int iomemtype;
+
     s->mc_base = base;
     s3c_mc_reset(s);
     iomemtype = cpu_register_io_memory(0, s3c_mc_readfn, s3c_mc_writefn, s);

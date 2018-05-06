@@ -1,4 +1,5 @@
-#include "sysbus.h"
+#include "s3c.h"
+#include "hw.h"
 
 /* ADC & Touchscreen interface */
 struct s3c_adc_state_s {

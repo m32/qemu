@@ -1,29 +1,7 @@
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 
 /* IIS-BUS interface */
-struct s3c_i2s_state_s { /* XXX move to .c */
-    target_phys_addr_t base;
-    qemu_irq *dma;
-    void (*data_req)(void *, int, int);
-
-    uint16_t control;
-    uint16_t mode;
-    uint16_t prescaler;
-    uint16_t fcontrol;
-
-    int tx_en;
-    int rx_en;
-    int tx_len;
-    int rx_len;
-    void (*codec_out)(void *, uint32_t);
-    uint32_t (*codec_in)(void *);
-    void *opaque;
-
-    uint16_t buffer;
-    int cycle;
-};
-
 static inline void s3c_i2s_update(struct s3c_i2s_state_s *s)
 {
     s->tx_en =
@@ -212,4 +190,3 @@ struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma)
 
     return s;
 }
-

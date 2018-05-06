@@ -1,5 +1,5 @@
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 #include "qemu-char.h"
 
 /* UART */
@@ -358,4 +358,3 @@ void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr)
     qemu_chr_add_handlers(chr, s3c_uart_is_empty,
                     s3c_uart_rx, s3c_uart_event, s);
 }
-

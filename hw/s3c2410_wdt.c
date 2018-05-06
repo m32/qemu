@@ -1,6 +1,5 @@
 #include "s3c.h"
-#include "sysbus.h"
-#include "sysemu.h"
+#include "hw.h"
 #include "qemu-timer.h"
 
 /* Watchdog Timer */
@@ -164,4 +163,3 @@ struct s3c_wdt_state_s *s3c_wdt_init(struct s3c_freq_s * freq, target_phys_addr_
 
     return s;
 }
-

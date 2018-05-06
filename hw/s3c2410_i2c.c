@@ -1,23 +1,7 @@
 #include "s3c.h"
-#include "sysbus.h"
-#include "i2c.h"
+#include "hw.h"
 
 /* IIC-bus serial interface */
-typedef struct s3c_i2c_state_s {
-	SysBusDevice busdev;
-    i2c_slave slave;
-    i2c_bus *bus;
-    target_phys_addr_t base;
-    qemu_irq irq;
-
-    uint8_t control;
-    uint8_t status;
-    uint8_t data;
-    uint8_t addy;
-    uint8_t mmaster;
-    int busy;
-    int newstart;
-} s3c_i2c_state_s;
 
 static void s3c_i2c_irq(struct s3c_i2c_state_s *s)
 {
@@ -261,23 +245,7 @@ void s3c_i2c_init(SysBusDevice * dev)
     register_savevm("s3c24xx_i2c", 0, 0, s3c_i2c_save, s3c_i2c_load, s);
 }
 
-struct s3c_i2c_state_s *s3c_i2c_init1(struct s3c_state_s *s, target_phys_addr_t base)
-{
-    // s->i2c = NULL;
-    DeviceState * dev;
-    dev = sysbus_create_simple("s3c-i2c", base, s->irq[S3C_PIC_IIC]);
-    return FROM_SYSBUS(s3c_i2c_state_s, dev);
-}
-
 i2c_bus *s3c_i2c_bus(struct s3c_i2c_state_s *s)
 {
     return s->bus;
 }
-
-
-static void s3c_register_devices(void)
-{
-    sysbus_register_dev("s3c-i2c", sizeof(s3c_i2c_state_s), s3c_i2c_init);
-}
-
-device_init(s3c_register_devices);

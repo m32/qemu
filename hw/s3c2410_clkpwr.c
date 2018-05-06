@@ -1,5 +1,5 @@
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 
 /* Clock & power management */
 #define S3C_LOCKTIME	0x00	/* PLL Lock Time Count register */
@@ -164,11 +164,12 @@ static int s3c_clkpwr_load(QEMUFile *f, void *opaque, int version_id)
 void s3c_clkpwr_init(struct s3c_state_s *s, target_phys_addr_t base)
 {
     int iomemtype;
+
     s->clkpwr_base = base;
     s3c_clkpwr_reset(s);
 
     iomemtype = cpu_register_io_memory(0, s3c_clkpwr_readfn,
-                    s3c_clkpwr_writefn, s);
+                                       s3c_clkpwr_writefn, s);
     cpu_register_physical_memory(s->clkpwr_base, 0xffffff, iomemtype);
     register_savevm("s3c24xx_clkpwr", 0, 0,
                     s3c_clkpwr_save, s3c_clkpwr_load, s);

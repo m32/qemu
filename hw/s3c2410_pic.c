@@ -1,5 +1,15 @@
+/*
+ * Samsung S3C2410A RISC Microprocessor support (ARM920T based SoC).
+ *
+ * Copyright (c) 2007 OpenMoko, Inc.
+ * Author: Andrzej Zaborowski <andrew@openedhand.com>
+ * With:	Michel Pollet <buserror@gmail.com>
+ *
+ * This code is licenced under the GNU GPL v2.
+ */
+
 #include "s3c.h"
-#include "sysbus.h"
+#include "hw.h"
 #include "arm-misc.h"
 
 /* Interrupt controller */
@@ -333,4 +343,3 @@ qemu_irq *s3c_pic_get(struct s3c_pic_state_s *s)
 {
     return s->irqs;
 }
-

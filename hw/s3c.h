@@ -13,6 +13,7 @@
 #include "flash.h"
 #include "sd.h"
 #include "sysbus.h"
+#include "i2c.h"
 
 #define S3C_CPU_2410	0x32410002
 #define S3C_CPU_2440	0x32440001
@@ -106,11 +107,116 @@
 
 # define S3C_XTAL_FREQ	32768		/* Hz */
 
+/* IIC-bus serial interface */
+typedef struct s3c_i2c_state_s {
+    SysBusDevice busdev;
+    i2c_slave slave;
+    i2c_bus *bus;
+    target_phys_addr_t base;
+    qemu_irq irq;
+
+    uint8_t control;
+    uint8_t status;
+    uint8_t data;
+    uint8_t addy;
+    uint8_t mmaster;
+    int busy;
+    int newstart;
+} s3c_i2c_state_s;
+/* s3c2410.c */
+struct s3c_pic_state_s;
+struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base,
+                qemu_irq *arm_pic);
+qemu_irq *s3c_pic_get(struct s3c_pic_state_s *s);
+
+struct s3c_dma_state_s;
+struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic);
+qemu_irq *s3c_dma_get(struct s3c_dma_state_s *s);
+
+/* GPIO TODO: remove this out, replace with qemu_irq or sumpthin */
+typedef void (*gpio_handler_t)(int line, int level, void *opaque);
+
+struct s3c_freq_s;
+struct s3c_timers_state_s;
+struct s3c_timers_state_s *s3c_timers_init(struct s3c_freq_s * freq,
+				target_phys_addr_t base, qemu_irq *pic, qemu_irq *dma);
+void s3c_timers_cmp_handler_set(void *opaque, int line,
+                gpio_handler_t handler, void *cmp_opaque);
+
+struct s3c_freq_s;
+struct s3c_uart_state_s;
+struct s3c_uart_state_s *s3c_uart_init(struct s3c_freq_s * freq, target_phys_addr_t base,
+                qemu_irq *irqs, qemu_irq *dma);
+void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr);
+
+struct s3c_adc_state_s;
+struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
+                qemu_irq tcirq);
+void s3c_adc_setscale(struct s3c_adc_state_s *adc, const int m[]);
+
+struct s3c_i2c_state_s;
+//struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq);
+void s3c_i2c_init(SysBusDevice * dev);
+i2c_bus *s3c_i2c_bus(struct s3c_i2c_state_s *s);
+
+struct s3c_i2s_state_s;
+struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma);
+
+struct s3c_freq_s;
+struct s3c_wdt_state_s;
+struct s3c_wdt_state_s *s3c_wdt_init(struct s3c_freq_s * freq, target_phys_addr_t base, qemu_irq irq);
+
+/* s3c24xx_gpio.c */
+struct s3c_gpio_state_s;
+struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic, uint32_t cpu_id);
+qemu_irq *s3c_gpio_in_get(struct s3c_gpio_state_s *s);
+void s3c_gpio_out_set(struct s3c_gpio_state_s *s, int line, qemu_irq handler);
+void s3c_gpio_setpwrstat(struct s3c_gpio_state_s *s, int stat);
+void s3c_gpio_reset(struct s3c_gpio_state_s *s);
+void s3c_gpio_set_dat(struct s3c_gpio_state_s *s, int gpio, int level);
+
+/* s3c24xx_lcd.c */
+struct s3c_lcd_state_s;
+struct s3c_lcd_state_s *s3c_lcd_init(target_phys_addr_t base,
+                qemu_irq irq);
+void s3c_lcd_reset(struct s3c_lcd_state_s *s);
+
+/* s3c24xx_mmci.c */
+struct s3c_mmci_state_s;
+struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base, uint32_t cpu_id,
+		SDState *mmc, qemu_irq irq, qemu_irq *dma);
+void s3c_mmci_reset(struct s3c_mmci_state_s *s);
+
+/* s3c24xx_rtc.c */
+struct s3c_rtc_state_s;
+struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, qemu_irq irq);
+void s3c_rtc_reset(struct s3c_rtc_state_s *s);
+
+/* s3c24xx_udc.c */
+struct s3c_udc_state_s;
+struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base, qemu_irq irq,
+                qemu_irq *dma);
+void s3c_udc_reset(struct s3c_udc_state_s *s);
+
 struct s3c_nand_driver_s {
 	void (*reset)(void * opaque);
 	void (*setwp)(void * opaque, int wp);
 	void (*reg)(void * opaque, NANDFlashState *chip);
 };
+
+/* s3c2410_nand.c */
+struct s3c_nand_driver_s * s3c2410_nand_init(void);
+/* s3c2440_nand.c */
+struct s3c_nand_driver_s * s3c2440_nand_init(void);
+
+/* s3c2410.c */
+struct s3c_spi_state_s;
+struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base,
+                qemu_irq irq0, qemu_irq drq0, qemu_irq irq1, qemu_irq drq1,
+                struct s3c_gpio_state_s *gpio);
+void s3c_spi_attach(struct s3c_spi_state_s *s, int ch,
+                uint8_t (*txrx)(void *opaque, uint8_t value),
+                uint8_t (*btxrx)(void *opaque, uint8_t value), void *opaque);
 
 struct s3c_freq_s {
 	uint32_t	xtal;	/* 16 or 12Mhz : Set in init()*/
@@ -127,7 +233,6 @@ struct s3c_state_s {
     uint32_t cpu_id;
     qemu_irq *irq;
     qemu_irq *drq;
-    struct s3c_mc_state_s *mc;
     struct s3c_pic_state_s *pic;
     struct s3c_dma_state_s *dma;
     struct s3c_gpio_state_s *io;
@@ -144,53 +249,40 @@ struct s3c_state_s {
     struct s3c_wdt_state_s *wdt;
     struct s3c_nand_driver_s *nand;
 
+    /* Memory controller */
+    target_phys_addr_t mc_base;
+    uint32_t mc_regs[13];
+
     /* Clock & power management */
     target_phys_addr_t clkpwr_base;
     uint32_t clkpwr_regs[6 + 1];	// 6 2410. 1 2440
 };
 
-struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base, qemu_irq *arm_pic);
-struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic);
-struct s3c_timers_state_s *s3c_timers_init(struct s3c_freq_s * freq, target_phys_addr_t base, qemu_irq *pic, qemu_irq *dma);
-struct s3c_uart_state_s *s3c_uart_init(struct s3c_freq_s * freq, target_phys_addr_t base, qemu_irq *irqs, qemu_irq *dma);
-struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq, qemu_irq tcirq);
-struct s3c_mc_state_s *s3c_mc_init(target_phys_addr_t base);
-struct s3c_i2c_state_s *s3c_i2c_init1(struct s3c_state_s *s, target_phys_addr_t base);
-struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma);
-struct s3c_wdt_state_s *s3c_wdt_init(struct s3c_freq_s * freq, target_phys_addr_t base, qemu_irq irq);
-struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic, uint32_t cpu_id);
-struct s3c_lcd_state_s *s3c_lcd_init(target_phys_addr_t base, qemu_irq irq);
-struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base, uint32_t cpu_id, SDState *mmc, qemu_irq irq, qemu_irq *dma);
-struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base, qemu_irq irq, qemu_irq *dma);
-struct s3c_nand_driver_s * s3c2410_nand_init(target_phys_addr_t base);
-struct s3c_nand_driver_s * s3c2440_nand_init(target_phys_addr_t base);
-struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, qemu_irq irq);
-struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base, qemu_irq irq0, qemu_irq drq0, qemu_irq irq1, qemu_irq drq1, struct s3c_gpio_state_s *gpio);
-void s3c_clkpwr_init(struct s3c_state_s *s, target_phys_addr_t base);
-struct s3c_state_s *s3c24xx_init(uint32_t cpu_id, uint32_t xtal, unsigned int sdram_size, uint32_t sram_address, SDState *mmc);
-
-qemu_irq *s3c_gpio_in_get(struct s3c_gpio_state_s *s);
-i2c_bus *s3c_i2c_bus(struct s3c_i2c_state_s *s);
-
-#if 0
-qemu_irq *s3c_pic_get(struct s3c_pic_state_s *s);
-qemu_irq *s3c_dma_get(struct s3c_dma_state_s *s);
-void s3c_timers_cmp_handler_set(void *opaque, int line, gpio_handler_t handler, void *cmp_opaque);
-void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr);
-void s3c_adc_setscale(struct s3c_adc_state_s *adc, const int m[]);
-//struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq);
-void s3c_gpio_out_set(struct s3c_gpio_state_s *s, int line, qemu_irq handler);
-void s3c_gpio_setpwrstat(struct s3c_gpio_state_s *s, int stat);
-void s3c_gpio_reset(struct s3c_gpio_state_s *s);
-void s3c_gpio_set_dat(struct s3c_gpio_state_s *s, int gpio, int level);
-void s3c_lcd_reset(struct s3c_lcd_state_s *s);
-void s3c_mmci_reset(struct s3c_mmci_state_s *s);
-void s3c_rtc_reset(struct s3c_rtc_state_s *s);
-void s3c_udc_reset(struct s3c_udc_state_s *s);
+/* s3c2410.c */
+struct s3c_state_s *s3c24xx_init(uint32_t cpu_id, uint32_t xtal, unsigned int sdram_size, uint32_t sram_address,
+		SDState *mmc);
 
 
-void s3c_spi_attach(struct s3c_spi_state_s *s, int ch, uint8_t (*txrx)(void *opaque, uint8_t value), uint8_t (*btxrx)(void *opaque, uint8_t value), void *opaque);
+struct s3c_i2s_state_s { /* XXX move to .c */
+    target_phys_addr_t base;
+    qemu_irq *dma;
+    void (*data_req)(void *, int, int);
 
-#endif
+    uint16_t control;
+    uint16_t mode;
+    uint16_t prescaler;
+    uint16_t fcontrol;
+
+    int tx_en;
+    int rx_en;
+    int tx_len;
+    int rx_len;
+    void (*codec_out)(void *, uint32_t);
+    uint32_t (*codec_in)(void *);
+    void *opaque;
+
+    uint16_t buffer;
+    int cycle;
+};
 
 #endif	/* S3C_H */
